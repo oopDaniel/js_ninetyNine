@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+jspm_packages
+bower_components
+
+# Build artifacts
+dist
+
+# Local settings and dotenv environment variables file(s)
+.env
+.env.*
+
+# IDEs
+
+### SublimeText ###
+# cache files for sublime text
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+# workspace files are user-specific
+*.sublime-workspace
+
+### VisualStudioCode ###
+.vscode/*
+jsconfig.json
+tsconfig.json
+
+### WebStorm/IntelliJ ###
+.idea
+modules.xml
+*.ipr
+
+# System Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+# Log
+*.log*
