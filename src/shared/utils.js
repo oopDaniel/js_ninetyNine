@@ -1,0 +1,14 @@
+import { FUNCTIONAL_CARDS } from './constants'
+
+export const shuffle = cards => {
+  const res = [...cards]
+  let index
+  let total = cards.length
+  while (total !== 0) {
+    index = ~~(Math.random() * total--);
+    [res[index], res[total]] = [res[total], res[index]]
+  }
+  return res
+}
+
+export const isFunctional = card => FUNCTIONAL_CARDS.includes(card)
