@@ -1,24 +1,48 @@
 {
-  "name": "cardgame",
+  "name": "ninety-nine",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "An interesting card game 😆",
+  "main": "server/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint --fix src",
+    "test": "cross-env BABEL_ENV=test karma start test/karma.conf.js --single-run",
+    "tdd": "cross-env BABEL_ENV=test karma start test/karma.conf.js"
   },
-  "author": "Daniel",
+  "author": "Daniel Chiang",
   "license": "ISC",
   "engines": {
     "node": ">= 8.0.0",
     "npm": ">= 5.6.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint",
+      "pre-push": "npm run lint && npm run test"
+    }
   },
   "devDependencies": {
     "babel": "^6.23.0",
     "babel-eslint": "^10.0.1",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
+    "chai": "^4.2.0",
+    "cross-env": "^5.2.0",
     "eslint": "^5.6.1",
     "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-import": "^2.14.0"
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "husky": "^1.0.1",
+    "karma": "^3.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-mocha": "^1.3.0",
+    "karma-sinon-chai": "^2.0.2",
+    "karma-spec-reporter": "0.0.32",
+    "karma-webpack": "^3.0.5",
+    "mocha": "^5.2.0",
+    "sinon": "^6.3.4",
+    "sinon-chai": "^3.2.0",
+    "webpack": "^4.20.2"
   }
 }
