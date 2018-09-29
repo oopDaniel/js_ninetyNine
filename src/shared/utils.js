@@ -1,4 +1,4 @@
-import { FUNCTIONAL_CARDS } from './constants'
+import { FUNCTIONAL_CARDS, SUITS } from './constants'
 
 export const shuffle = cards => {
   const res = [...cards]
@@ -12,3 +12,11 @@ export const shuffle = cards => {
 }
 
 export const isFunctional = card => FUNCTIONAL_CARDS.includes(card)
+export const getValue = num => num % 13 === 0 ? 13 : num % 13
+export const getCard = num => {
+  const suit = ~~((num - 1) / 13)
+  return {
+    value: getValue(num),
+    suit: SUITS[suit]
+  }
+}
