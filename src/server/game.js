@@ -153,6 +153,7 @@ export default class Game {
   }
 
   draw () {
+    // console.warn(')))deck', this.deck)
     return this.deck.unshift()
   }
 
@@ -215,7 +216,10 @@ export default class Game {
   }
 
   announceWinner () {
-    const winner = this.players.find(p => !this.dead[p.id])
-    winner.socket.emit('win')
+    const winner = this.players.filter((p, i) => !this.dead[i])
+    this.broadcast.emit('win', {
+      id: winner.id,
+      isRobot: winner.robot
+    })
   }
 }

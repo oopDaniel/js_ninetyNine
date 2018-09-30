@@ -18,9 +18,11 @@ export default class Robot {
     // Functional card only
     if (game.sum === MAX_SUM) {
       const functionals = R.filter(isFunctional, this.hands)
+      // console.warn('PC hands', this.hands)
       // Randomly pick a functional card
       if (hasValue(functionals)) card = sample(functionals)
     } else {
+      // console.warn('PC hands', this.hands)
       // TODO: use functional
       const options = R.reject(R.compose(isMoreThanSum(game.sum), getValue), this.hands)
       if (hasValue(options)) {

@@ -1,8 +1,6 @@
 import R from 'ramda'
-import { isFunctional, getValue, hasValue, isMoreThanSum } from '../shared/utils'
+import { isFunctional, getValue, hasValue, isLessThanSum } from '../shared/utils'
 import Robot from './robot/robot'
-
-const isLessThanSum = sum => R.complement(isMoreThanSum(sum))
 
 export default class UserProxy extends Robot {
   validate (game) {
@@ -108,8 +106,7 @@ export default class UserProxy extends Robot {
 
   accumulateSum (card, game) {
     const num = getValue(card)
-    if (isLessThanSum(game.sum, num)) {
-      // console.log(game.sum, num, isLessThanSum(game.sum, num))
+    if (isLessThanSum(game.sum)(num)) {
       game.put(card)
       super.accumulateSum(num, game)
       this.doPostActions(card, game)

@@ -29,4 +29,5 @@ export const getCard = num => {
 export const hasValue = R.complement(R.isEmpty)
 export const sample = (options = []) => options[~~(Math.random() * options.length)]
 export const isMoreThanSum = sum => num => R.gt(sum + num, MAX_SUM)
+export const isLessThanSum = sum => num => R.lte(sum + num, MAX_SUM)
 export const maxNum = R.reduce(R.max, 0)

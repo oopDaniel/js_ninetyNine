@@ -18,7 +18,7 @@ socket.on('sum', sum => console.log(`Sum: ${sum}\n`))
 socket.on('invalid', handleInvalid)
 socket.on('askInstruction', handleInstruction)
 socket.on('lose', handleLose)
-socket.on('win', () => console.log('\n\n\nYou Win!\n\n\n'))
+socket.on('win', handleWin)
 socket.on('yourTurn', handleTurn)
 
 const rl = readline.createInterface({
@@ -59,7 +59,7 @@ function handleTurn (hands) {
 
 function handleInvalid ({ card, hands }) {
   console.warn(`${getValue(card)} isn't a valid one.`)
-  this.handleTurn(hands)
+  handleTurn(hands)
 }
 
 function handleInstruction ({ card, options = [] }) {
@@ -112,6 +112,16 @@ function handleLose ({ id: loseId, isRobot }) {
   } else {
     console.log('\n~~~~~~~~~~')
     console.log(`${isRobot ? 'Robot' : 'User'}_${loseId} Loses!`)
+    console.log('~~~~~~~~~~\n')
+  }
+}
+
+function handleWin ({ id: winId, isRobot }) {
+  if (winId === id) {
+    console.warn('\n\n~~~~~~~~~~\nYou Win!\n~~~~~~~~~~\n\n')
+  } else {
+    console.log('\n~~~~~~~~~~')
+    console.log(`${isRobot ? 'Robot' : 'User'}_${winId} Wins!`)
     console.log('~~~~~~~~~~\n')
   }
 }
