@@ -12,9 +12,9 @@ const map = {
 const color = ({ suit, value }) => {
   value = map[value] || value
   if (['Spade', 'Club'].includes(suit)) {
-    return chalk.black.bgWhite(`${suit === 'Spade' ? 'S' : 'C'}${value}`)
+    return chalk.black.bgWhite(`${suit === 'Spade' ? '♣' : '♠'}${value}`)
   } else {
-    return chalk.red.bgWhite(`${suit === 'Heart' ? 'H' : 'D'}${value}`)
+    return chalk.red.bgWhite(`${suit === 'Heart' ? '♥' : '♦'}${value}`)
   }
 }
 
