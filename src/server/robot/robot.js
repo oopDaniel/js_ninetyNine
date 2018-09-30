@@ -1,9 +1,13 @@
 import R from 'ramda'
-import { isFunctional, hasValue, sample, isMoreThanSum } from '../../shared/utils'
+import { isFunctional, hasValue, sample, isMoreThanSum, getValue } from '../../shared/utils'
 import { MAX_SUM } from '../../shared/constants'
 
 export default class Robot {
-  constructor (hands) {
+  constructor (id) {
+    this.id = id
+  }
+
+  setHands (hands) {
     this.hands = hands
   }
 
@@ -31,13 +35,18 @@ export default class Robot {
       this.useCard(card, game)
       this.draw(game)
     } else {
-      console.log('lose')
+      game.lose(this.hands)
     }
-    return card
+    return game
   }
 
   useCard (card, game) {
-    R.ifElse(isFunctional, this.executeFunction, this.accumulateSum)(card)
+    game.put(card)
+    if (isFunctional(card)) {
+      this.executeFunction(getValue(card), game)
+    } else {
+      this.accumulateSum(getValue(card), game)
+    }
     this.hands = R.reject(v => v === card, this.hands)
   }
 
@@ -45,19 +54,42 @@ export default class Robot {
     this.hands.push(game.draw())
   }
 
-  executeFunction (card, game) {
-    switch (card) {
+  executeFunction (num, game) {
+    switch (num) {
+      case 1: {
+        game.reset()
+        break
+      }
       case 4: {
         game.reverse()
         break
       }
       case 5: {
-
+        const options = R.reject(R.propEq('id', this.id), game.players)
+        const next = sample(options)
+        game.next(R.findIndex(R.propEq('id', next.id), game.players))
+        break
+      }
+      case 10: {
+        game.addOrReduce(10)
+        break
+      }
+      case 11: {
+        game.next()
+        break
+      }
+      case 12: {
+        game.addOrReduce(20)
+        break
+      }
+      case 13: {
+        game.to99()
+        break
       }
     }
   }
 
-  accumulateSum () {
-
+  accumulateSum (num, game) {
+    game.accumulate(num)
   }
 }

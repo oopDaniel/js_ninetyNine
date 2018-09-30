@@ -1,4 +1,6 @@
 export const PORT = 8080
+export const MAX_PLAYERS = 6
+export const MAX_USERS = 4 // Use 4 to simplify logic for now
 
 const INDISTINCT_FUNCTION_CARD_VALUES = [4, 5, 10, 11, 12, 13]
 const SUIT_SIZE = 13

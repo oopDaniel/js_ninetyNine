@@ -1,17 +1,23 @@
 import R from 'ramda'
-import { shuffle } from '../shared/utils'
+import { shuffle, mod, isMoreThanSum } from '../shared/utils'
+import { MAX_SUM, MAX_PLAYERS } from '../shared/constants'
 
 const INITIAL_HANDS = 5
 
 export default class Game {
-  constructor (playerCount = 4) {
+  constructor (players = []) {
+    if (players.length < 2) throw new Error('Need more players')
     this.sum = 0
     this.deck = Array.from(new Array(53), (_, i) => i + 1)
-    this.playerCount = playerCount
+    this.players = players
+    this.playerCount = players.length
     this.isClockwise = true
+    this.hands = null
+    this.turn = null
     this.shuffle()
-    this._initHands(playerCount)
+    this._initHands()
     this._deal()
+    this._initTurn()
   }
 
   shuffle () {
@@ -21,11 +27,11 @@ export default class Game {
   /**
    * Get this [ [], [], [], [] ]
    */
-  _initHands (playerCount) {
-    const possiblePlayers = [0, 1, 2, 3, 4, 5]
+  _initHands () {
+    const possiblePlayers = new Array(MAX_PLAYERS)
     this.hands = R.compose(
       R.map(() => []),
-      R.slice(0, playerCount)
+      R.slice(0, this.playerCount)
     )(possiblePlayers)
   }
 
@@ -36,6 +42,28 @@ export default class Game {
       }
     }
     this.deck = this.deck.slice(this.playerCount * INITIAL_HANDS)
+  }
+
+  _initTurn () {
+    const current = ~~(Math.random() * this.playerCount)
+    this.turn = {
+      current,
+      next: (current + 1) % this.playerCount
+    }
+  }
+
+  getNext () {
+    const { current } = this.turn
+    const index = this.isClockwise ? 1 : -1
+    return mod(current + index, this.playerCount)
+  }
+
+  next (customNext) {
+    const { next: current } = this.turn
+    this.turn = {
+      current,
+      next: customNext || this.getNext()
+    }
   }
 
   put (cardOrCards) {
@@ -53,11 +81,28 @@ export default class Game {
 
   accumulate (num) {
     this.sum += num
-    if (this.sum > 99) throw Error('Sum exceeds 99, which shouldn\'t happen')
+    if (this.sum > MAX_SUM) throw Error('Sum exceeds 99, which shouldn\'t happen')
+  }
+
+  addOrReduce (num) {
+    this.sum = R.ifElse(
+      isMoreThanSum(this.sum),
+      R.subtract(this.sum),
+      R.add(this.sum)
+    )(num)
   }
 
   reset () {
     this.sum = 0
+    this.shuffle()
+  }
+
+  to99 () {
+    this.sum = 99
+  }
+
+  lose (hands) {
+    this.put(hands)
     this.shuffle()
   }
 }

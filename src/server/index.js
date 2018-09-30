@@ -1,17 +1,23 @@
 import socketIo from 'socket.io'
-import { PORT } from '../shared/constants'
+import { PORT, MAX_USERS } from '../shared/constants'
 import Game from './game'
 import { getRobot } from './robot'
 const io = socketIo(PORT)
 
-const MAX_USERS = 4 // Use 4 to simplify logic for now
 let hasGameStarted = false
 let realUserCount = 0
 let robotCount = 0
-let robots
+let robots = []
+let players = []
+let game = null
 
 io.on('connection', (socket) => {
   realUserCount++
+  players.push({
+    id: socket.id,
+    socket
+  })
+
   console.log(`[Server]: A user just connected (total: ${realUserCount}).`)
 
   if (!hasGameStarted) {
@@ -25,22 +31,36 @@ io.on('connection', (socket) => {
 
 function handleStartGame () {
   robotCount = MAX_USERS - realUserCount
+  robots = Array.from(new Array(robotCount), (_, i) => getRobot(i))
+
+  players = [
+    ...players,
+    ...robots.map((robot, id) => ({ id, robot }))
+  ]
+
   io.sockets.emit('gameStarted', realUserCount)
-  const game = new Game()
-  console.info(game.hands)
+  game = new Game(players)
+
   const userHands = game.hands.slice(0, realUserCount)
-  userHands.forEach(h => io.sockets.emit('deal', h))
+  userHands.forEach((h, i) => players[i].socket.emit('deal', h))
+
   if (robotCount > 0) {
     const robotHands = game.hands.slice(realUserCount, MAX_USERS)
-    robots = Array.from(new Array(robotCount), (_, i) => getRobot(robotHands[i]))
+    robots.forEach((r, i) => r.setHands(robotHands[i]))
   }
-  robots.forEach(r => console.info(r))
-  // console.log(robots)
+
+  robots.forEach(r => console.info(r.hands))
+
+  // while (players[game.turn.current].robot) {
+  //   players[game.turn.current].robot.play(game)
+  // }
 }
 
 function handleDisconnect (socket) {
   return () => {
     realUserCount--
+    const i = players.findIndex(s => s.id === socket.id)
+    if (i > -1) this.players.splice(i, 1)
     if (hasGameStarted) {
       socket.broadcast.emit('userDisconnected')
       // TODO: shuffle

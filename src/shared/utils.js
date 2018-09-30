@@ -12,6 +12,9 @@ export const shuffle = cards => {
   return res
 }
 
+// `%` only deals unsigned int
+export const mod = (n, m) => ((n % m) + m) % m
+
 export const isFunctional = card => FUNCTIONAL_CARDS.includes(card)
 export const getValue = num => num % 13 === 0 ? 13 : num % 13
 export const getCard = num => {

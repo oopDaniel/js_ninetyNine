@@ -43,15 +43,11 @@ export default class SmartRobot extends Robot {
     }
   }
 
-  executeFunction (card, game) {
-    switch (card) {
-      case 4: {
-        game.reverse()
-        break
-      }
-      case 5: {
-
-      }
+  executeFunction (num, game) {
+    if (num === 5) {
+      game.next()
+    } else {
+      super.executeFunction(num, game)
     }
   }
 }

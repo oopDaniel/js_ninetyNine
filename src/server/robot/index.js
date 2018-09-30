@@ -2,11 +2,11 @@ import EvilRobot from './evilRobot'
 import SmartRobot from './smartRobot'
 import Robot from './Robot'
 
-export const getRobot = (hands) => {
+export const getRobot = (id) => {
   const index = Math.random()
-  if (index < 0.3) return new Robot(hands)
-  else if (index > 0.6) return new EvilRobot(hands)
-  return new SmartRobot(hands)
+  if (index < 0.3) return new Robot(id)
+  else if (index > 0.6) return new EvilRobot(id)
+  return new SmartRobot(id)
 }
 
 export const getRobots = (total) => {

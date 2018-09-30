@@ -8,7 +8,7 @@ socket.on('canStart', handleCanStart)
 socket.on('userConnected', (user) => console.log(`User ${user} joined the game.`))
 socket.on('shouldStart', handleShouldStart)
 socket.on('gameStarted', () => console.log('START!!'))
-socket.on('deal', (hands) => console.log('You got ', hands))
+socket.on('deal', (hands) => console.log('You got ', hands, 'sum: 0'))
 socket.on('userDisconnected', () => console.log('An user left the game :('))
 
 const rl = readline.createInterface({
