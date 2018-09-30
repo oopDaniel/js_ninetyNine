@@ -33,7 +33,6 @@ export default class Game {
   userMove (id, payload, isInstruction = false) {
     const player = this.getUserById(id)
     if (isInstruction) {
-      console.log('user moved', payload)
       player.proxy.setInstruction(this, payload)
     } else {
       player.proxy.useCard(this, payload)
@@ -57,7 +56,7 @@ export default class Game {
     }))(this.players.filter(
       R.allPass([
         p => p.id !== id,
-        (_, i) => !this.dead[i]
+        p => !this.dead[p.id]
       ])
     ))
     player.socket.emit('askInstruction', { card, options })
@@ -86,10 +85,9 @@ export default class Game {
   _initTurn () {
     const current = ~~(Math.random() * this.playerCount)
     this.turn = {
-      current,
-      next: (current + 1) % this.playerCount
+      current: this.players[current].id,
+      next: this.players[(current + 1) % this.playerCount].id
     }
-    console.log('after init turn:', this.turn)
   }
 
   start () {
@@ -98,7 +96,7 @@ export default class Game {
 
   continue () {
     this.broadcast.emit('sum', this.sum)
-    const curr = this.players[this.turn.current]
+    const curr = this.getUserById(this.turn.current)
     if (curr.robot) {
       curr.robot.play(this)
     } else {
@@ -108,46 +106,36 @@ export default class Game {
   }
 
   getNext (current = this.turn.next) {
-    const index = this.isClockwise ? 1 : -1
-    return mod(current + index, this.playerCount)
+    const index = this.players.findIndex(p => p.id === current)
+    const offset = this.isClockwise ? 1 : -1
+    const newIndex = mod(index + offset, this.playerCount)
+    return this.players[newIndex].id
   }
 
   setNext (custom) {
-    console.log('original: this.turn', this.turn.next, this.turn.current)
-    do {
-      const { next: current } = this.turn
-      this.turn = {
-        current: custom || current,
-        next: this.getNext(custom)
-      }
-    } while (this.dead[this.turn.current])
-    console.log('after changed: this.turn', this.turn)
+    const { next: current } = this.turn
+    this.turn = {
+      current: custom || current,
+      next: this.getNext(custom || current)
+    }
   }
 
   announce (card) {
-    const curr = this.players[this.turn.current]
-    // const socket = this.players.filter(p => p.socket && p.id === curr.id)
+    const curr = this.getUserById(this.turn.current)
     this.broadcast.emit('played', {
       card,
       user: curr.id,
       isRobot: curr.robot,
       target: this.turn.next
     })
-    // socket.broadcast.emit()
-    // socket.emit('played', {
-    //   card,
-    //   user: 'You',
-    //   isRobot: false
-    // })
   }
 
   put (cardOrCards) {
     if (Array.isArray(cardOrCards)) {
       this.deck.push(...cardOrCards) // happens when someone loses
     } else {
-      console.log('this.turn.current', this.turn.current)
       console.log('===============================')
-      console.log('put:', `[${getValue(cardOrCards)}]`, 'by', this.players[this.turn.current] && this.players[this.turn.current].id)
+      console.log('Put:', `[${getValue(cardOrCards)}]`, `(by: ${this.turn.current})`)
       console.log('===============================')
       this.announce(cardOrCards)
       this.deck.push(cardOrCards)
@@ -162,7 +150,6 @@ export default class Game {
   reverse () {
     this.isClockwise = !this.isClockwise
     this.turn.next = this.getNext(this.turn.current)
-    console.log('reverse new turn', this.turn)
   }
 
   accumulate (num) {
@@ -175,7 +162,6 @@ export default class Game {
   }
 
   reduceSum (num) {
-    console.warn(this)
     this.sum -= num
   }
 
@@ -204,11 +190,12 @@ export default class Game {
     })
     const index = this.players.findIndex(R.propEq('id', id))
     if (index > -1) {
-      this.dead[index] = true
-      console.log('putting hands back', hands)
+      this.players = R.remove(index, 1, this.players)
+      this.playerCount--
+      this.dead[id] = true
       this.put(hands)
       this.shuffle()
-      if (this.players.length - Object.keys(this.dead).length > 1) {
+      if (this.players.length !== 1) {
         this.setNext()
         this.continue()
       } else {
@@ -218,7 +205,7 @@ export default class Game {
   }
 
   announceWinner () {
-    const winner = this.players.find((p, i) => !this.dead[i])
+    const winner = this.players[0]
     this.broadcast.emit('win', {
       id: winner.id,
       isRobot: winner.robot

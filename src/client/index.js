@@ -7,12 +7,13 @@ import { render, renderAll } from './renderer'
 
 const socket = io(`http://127.0.0.1:${PORT}`)
 let id
+let hasStarted = false
 
 socket.on('canStart', handleCanStart)
 socket.on('userConnected', (user) => console.log(`User ${user} joined the game.`))
 socket.on('shouldStart', handleShouldStart)
 socket.on('id', (newId) => (id = newId))
-socket.on('gameStarted', () => console.log('\n------------------------\n\tGAME START!!\n------------------------\n'))
+socket.on('gameStarted', handleStarted)
 socket.on('deal', (newHands) => console.log('You got ', renderAll(newHands)))
 socket.on('userDisconnected', () => console.log('An user left the game :('))
 socket.on('played', handlePlayed)
@@ -32,9 +33,14 @@ function handleCanStart () {
   rl.question(
     'We\'re connected. Wait for other players to join...\n(or you enter any word to start)\n',
     res => {
-      if (res) socket.emit('startGame')
+      if (res && !hasStarted) socket.emit('startGame')
     }
   )
+}
+
+function handleStarted () {
+  hasStarted = true
+  console.log('\n------------------------\n\tGAME START!!\n------------------------\n')
 }
 
 function handleShouldStart () {
@@ -52,7 +58,6 @@ function handleTurn (hands) {
     'Enter the number of card: \n' + hands.map((v, i) => `(${i + 1})${render(v)}`).join(' ') + '\n',
     res => {
       if ([1, 2, 3, 4, 5].includes(+res)) {
-        console.log('(raw)', hands)
         socket.emit('play', hands[res - 1])
       }
     }

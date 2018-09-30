@@ -16,15 +16,12 @@ export default class UserProxy extends Robot {
   play (game, card) {
     this.useCard(card, game)
     this.draw(game)
-    // game.continue()
   }
 
   useCard (game, card) {
     if (isFunctional(card)) {
-      console.log('isfunctional', card)
       this.executeFunction(card, game)
     } else {
-      console.log('not functional ', card)
       this.accumulateSum(card, game)
     }
   }
@@ -32,9 +29,7 @@ export default class UserProxy extends Robot {
   doPostActions (card, game, next) {
     this.hands = R.reject(v => v === card, this.hands)
     game.setNext(next) // Will calculate default next if passing undefined
-    console.log('this hand length b4 draw', this.hands.length)
     this.draw(game)
-    console.log('this hand length', this.hands.length)
     game.continue()
   }
 
@@ -43,8 +38,7 @@ export default class UserProxy extends Robot {
     let index
     const num = getValue(card)
     if (num === 5) {
-      index = R.findIndex(R.propEq('id', inst), game.players)
-      console.log('player index', index, game.players)
+      index = inst
     } else {
       const func = inst === 1 ? game.addSum : game.reduceSum
       func.call(game, num === 10 ? 10 : 20)

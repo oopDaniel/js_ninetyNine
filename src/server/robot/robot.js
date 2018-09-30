@@ -13,7 +13,6 @@ export default class Robot {
   }
 
   play (game) {
-    console.log('playing robot id:', this.id)
     let card = null
     // Functional card only
     if (game.sum === MAX_SUM) {
@@ -74,7 +73,7 @@ export default class Robot {
       case 5: {
         const options = R.reject(R.propEq('id', this.id), game.players)
         const next = sample(options)
-        customNext = R.findIndex(R.propEq('id', next.id), game.players)
+        customNext = next.id
         break
       }
       case 10: {

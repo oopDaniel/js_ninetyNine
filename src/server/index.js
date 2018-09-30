@@ -64,13 +64,10 @@ function handleStartGame () {
 
 function handlePlay (id, card) {
   game.userMove(id, card)
-  console.log('user played card', card)
 }
 
 function handleInstruction (id, inst) {
-  console.log('hand inst')
   game.userMove(id, inst, true)
-  console.log('user inst', inst)
 }
 
 function handleDisconnect (socket) {
@@ -84,7 +81,6 @@ function handleDisconnect (socket) {
     } else if (hasGameStarted) {
       socket.broadcast.emit('userDisconnected')
       game.lose(socket.id)
-      // TODO: shuffle
     }
   }
 }
