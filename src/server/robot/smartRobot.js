@@ -35,7 +35,6 @@ export default class SmartRobot extends Robot {
       this.draw(game)
       game.continue()
     } else {
-      console.log('\n~~~> This robot loses', 'id', this.id, 'hand', this.hands.map(getValue), '\n')
       game.lose(this.id, this.hands)
     }
   }

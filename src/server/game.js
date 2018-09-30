@@ -1,5 +1,5 @@
 import R from 'ramda'
-import { shuffle, mod, isMoreThanSum, getValue } from '../shared/utils'
+import { shuffle, mod, isMoreThanSum } from '../shared/utils'
 import { MAX_SUM, MAX_PLAYERS } from '../shared/constants'
 
 const INITIAL_HANDS = 5
@@ -135,16 +135,15 @@ export default class Game {
     if (Array.isArray(cardOrCards)) {
       this.deck.push(...cardOrCards) // happens when someone loses
     } else {
-      console.log('===============================')
-      console.log('Put:', `[${getValue(cardOrCards)}]`, `(by: ${this.turn.current})`)
-      console.log('===============================')
+      // console.log('===============================')
+      // console.log('Put:', `[${getValue(cardOrCards)}]`, `(by: ${this.turn.current})`)
+      // console.log('===============================')
       this.announce(cardOrCards)
       this.deck.push(cardOrCards)
     }
   }
 
   draw () {
-    // console.warn(')))deck', this.deck)
     return this.deck.shift()
   }
 

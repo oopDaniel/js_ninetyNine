@@ -2,7 +2,15 @@ import chalk from 'chalk'
 import R from 'ramda'
 import { getCard } from '../shared/utils'
 
+const map = {
+  1: 'A',
+  11: 'J',
+  12: 'Q',
+  13: 'K'
+}
+
 const color = ({ suit, value }) => {
+  value = map[value] || value
   if (['Spade', 'Club'].includes(suit)) {
     return chalk.black.bgWhite(`${suit === 'Spade' ? 'S' : 'C'}${value}`)
   } else {

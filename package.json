@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "An interesting card game 😆",
   "scripts": {
-    "start": "concurrently -k \"npm run start:server\" \"npm run start:client\"",
+    "start": "concurrently -i --default-input-target 1 -k \"npm run start:server\" \"npm run start:client\"",
     "start:server": "nodemon --exec babel-node --plugins ramda src/server",
     "start:client": "nodemon --exec babel-node --plugins ramda src/client",
     "lint": "eslint --fix src",
