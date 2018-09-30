@@ -51,20 +51,20 @@ export default class Game {
       current,
       next: (current + 1) % this.playerCount
     }
-    console.log('* current', this.turn.current, this.turn.next)
   }
 
   start () {
-    this.continue(null)
+    this.continue()
   }
 
-  continue (caller) {
+  continue () {
     this.broadcast.emit('sum', this.sum)
-    console.warn({ caller })
-    if (this.players[this.turn.current].robot) {
-      this.players[this.turn.current].robot.play(this)
+    const curr = this.players[this.turn.current]
+    if (curr.robot) {
+      curr.robot.play(this)
     } else {
-      this.players[this.turn.current].socket.emit('yourTurn')
+      curr.proxy.validate(this)
+      curr.socket.emit('yourTurn', curr.proxy.hands)
     }
   }
 
@@ -76,7 +76,6 @@ export default class Game {
 
   setNext (customNext) {
     const { next: current } = this.turn
-    console.log('---cal current', current)
     this.turn = {
       current,
       next: customNext || this.getNext()
@@ -95,7 +94,7 @@ export default class Game {
   }
 
   put (cardOrCards) {
-    console.log('putt:', cardOrCards, 'by', this.players[this.turn.current].id, 'old sum', this.sum)
+    console.log('put:', cardOrCards, 'by', this.players[this.turn.current].id)
     if (Array.isArray(cardOrCards)) {
       this.deck.push(...cardOrCards) // happens when someone loses
     } else {
@@ -135,7 +134,11 @@ export default class Game {
   }
 
   lose (id, hands) {
-    this.players = R.reject(R.propEq('id', id), this.players)
+    const index = this.players.findIndex(R.propEq('id', id))
+    if (index > -1 && this.players[index].socket) {
+      this.players[index].socket.emit('lose', this.players[index].proxy.hands)
+    }
+    this.players = R.remove(index, 1, this.players)
     this.playerCount--
     this.put(hands)
     this.shuffle()

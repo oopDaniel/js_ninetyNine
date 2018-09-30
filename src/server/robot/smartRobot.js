@@ -12,7 +12,7 @@ export default class SmartRobot extends Robot {
       const functionals = R.filter(isFunctional, this.hands)
       if (hasValue(functionals)) card = this.pickFunctional(functionals)
     } else {
-      const options = R.reject(isMoreThanSum(game.sum), this.hands)
+      const options = R.reject(R.compose(isMoreThanSum(game.sum), getValue), this.hands)
       if (hasValue(options)) {
         const functionless = R.reject(isFunctional, options)
         // Try to use a functionless card first unless having full functional cards

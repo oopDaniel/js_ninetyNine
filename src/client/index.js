@@ -4,15 +4,11 @@ import { PORT } from '../shared/constants'
 import { getValue } from '../shared/utils'
 
 const socket = io(`http://127.0.0.1:${PORT}`)
-let hands
 socket.on('canStart', handleCanStart)
 socket.on('userConnected', (user) => console.log(`User ${user} joined the game.`))
 socket.on('shouldStart', handleShouldStart)
 socket.on('gameStarted', () => console.log('---START!!---'))
-socket.on('deal', (newHands) => {
-  hands = newHands
-  console.log('You got ', newHands)
-})
+socket.on('deal', (newHands) => console.log('You got ', newHands))
 socket.on('userDisconnected', () => console.log('An user left the game :('))
 socket.on('played', handlePlayed)
 socket.on('sum', sum => console.log(`Sum: ${sum}\n`))
@@ -42,7 +38,7 @@ function handlePlayed ({ card, user, isRobot, target, newSum }) {
   console.log(`${isRobot ? 'Robot' : 'User'}_${user} played ${card}.`)
 }
 
-function handleTurn () {
+function handleTurn (hands) {
   rl.question(
     'Enter the number of card: \n' + hands.map((v, i) => `(${i + 1})${getValue(v)}`).join(' ') + '\n',
     res => {

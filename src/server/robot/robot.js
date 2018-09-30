@@ -5,6 +5,7 @@ import { MAX_SUM } from '../../shared/constants'
 export default class Robot {
   constructor (id) {
     this.id = id
+    this.hands = null
   }
 
   setHands (hands) {
@@ -20,7 +21,7 @@ export default class Robot {
       // Randomly pick a functional card
       if (hasValue(functionals)) card = sample(functionals)
     } else {
-      const options = R.reject(isMoreThanSum(game.sum), this.hands)
+      const options = R.reject(R.compose(isMoreThanSum(game.sum), getValue), this.hands)
       if (hasValue(options)) {
         const functionless = R.reject(isFunctional, options)
         // Try to use a functionless card first unless having full functional cards
@@ -35,7 +36,7 @@ export default class Robot {
     if (card) {
       this.useCard(card, game)
       this.draw(game)
-      game.continue(this.id)
+      game.continue()
     } else {
       game.lose(this.id, this.hands)
     }
@@ -52,7 +53,6 @@ export default class Robot {
     }
     this.hands = R.reject(v => v === card, this.hands)
     game.setNext(next) // Will calculate default next if passing undefined
-    console.log('game next', game.turn.current, game.turn.next)
   }
 
   draw (game) {

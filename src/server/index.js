@@ -2,6 +2,7 @@ import socketIo from 'socket.io'
 import { PORT, MAX_USERS } from '../shared/constants'
 import Game from './game'
 import { getRobot } from './robot'
+import UserProxy from './userProxy'
 const io = socketIo(PORT)
 
 let hasGameStarted = false
@@ -15,7 +16,8 @@ io.on('connection', (socket) => {
   realUserCount++
   players.push({
     id: socket.id,
-    socket
+    socket,
+    proxy: new UserProxy(socket.id)
   })
 
   console.log(`[Server]: A user just connected (total: ${realUserCount}).`)
@@ -43,7 +45,10 @@ function handleStartGame () {
   game = new Game(players, io.sockets)
 
   const userHands = game.hands.slice(0, realUserCount)
-  userHands.forEach((h, i) => players[i].socket.emit('deal', h))
+  players.filter(p => p.proxy).forEach((player, i) => {
+    player.proxy.setHands(userHands[i])
+    player.socket.emit('deal', userHands[i])
+  })
 
   if (robotCount > 0) {
     const robotHands = game.hands.slice(realUserCount, MAX_USERS)
