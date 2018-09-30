@@ -1,5 +1,5 @@
 import R from 'ramda'
-import { isFunctional, hasValue, sample, isMoreThanSum, getValue } from '../../shared/utils'
+import { isFunctional, hasValue, sample, isLessThanSum, getValue } from '../../shared/utils'
 import { MAX_SUM } from '../../shared/constants'
 
 export default class Robot {
@@ -20,8 +20,12 @@ export default class Robot {
       // Randomly pick a functional card
       if (hasValue(functionals)) card = sample(functionals)
     } else {
-      // TODO: use functional
-      const options = R.reject(R.compose(isMoreThanSum(game.sum), getValue), this.hands)
+      const options = R.filter(
+        R.anyPass([
+          R.compose(isLessThanSum(game.sum), getValue),
+          isFunctional
+        ])
+      )(this.hands)
       if (hasValue(options)) {
         const functionless = R.reject(isFunctional, options)
         // Try to use a functionless card first unless having full functional cards

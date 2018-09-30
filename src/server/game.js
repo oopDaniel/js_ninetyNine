@@ -16,6 +16,7 @@ export default class Game {
     this.hands = null
     this.turn = null
     this.dead = {}
+    this.hasFinished = false
     this.shuffle()
     this._initHands()
     this._deal()
@@ -205,6 +206,7 @@ export default class Game {
   }
 
   announceWinner () {
+    this.hasFinished = true
     const winner = this.players[0]
     this.broadcast.emit('win', {
       id: winner.id,

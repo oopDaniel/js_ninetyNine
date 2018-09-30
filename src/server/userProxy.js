@@ -34,7 +34,6 @@ export default class UserProxy extends Robot {
   }
 
   setInstruction (game, { card, inst }) {
-    console.log('set ins', card, inst)
     let index
     const num = getValue(card)
     if (num === 5) {

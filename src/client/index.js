@@ -39,6 +39,7 @@ function handleCanStart () {
 }
 
 function handleStarted () {
+  console.log('\x1Bc')
   hasStarted = true
   console.log('\n------------------------\n\tGAME START!!\n------------------------\n')
 }
@@ -124,6 +125,8 @@ function handleLose ({ id: loseId, isRobot }) {
 }
 
 function handleWin ({ id: winId, isRobot }) {
+  console.log('\x1Bc')
+  rl.close()
   if (winId === id) {
     console.warn(chalk.yellow('\n\n~~~~~~~~~~\nYou Win!\n~~~~~~~~~~\n\n'))
   } else {

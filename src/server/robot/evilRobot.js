@@ -16,9 +16,9 @@ export default class EvilRobot extends SmartRobot {
       card = this.hands[R.findIndex(isK, this.hands)]
       this.useCard(card, game)
       this.draw(game)
-      return card
+      game.continue()
     } else {
-      return super.play(game)
+      super.play(game)
     }
   }
 

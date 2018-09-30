@@ -57,13 +57,11 @@ function handleStartGame () {
     robots.forEach((r, i) => r.setHands(robotHands[i]))
   }
 
-  // robots.forEach(r => console.info(r.hands))
-
   game.start()
 }
 
 function handlePlay (id, card) {
-  game.userMove(id, card)
+  if (!game.hasFinished) game.userMove(id, card)
 }
 
 function handleInstruction (id, inst) {

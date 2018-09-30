@@ -1,6 +1,6 @@
 import Robot from './robot'
 import R from 'ramda'
-import { isFunctional, hasValue, isMoreThanSum, maxNum, getValue } from '../../shared/utils'
+import { isFunctional, hasValue, isLessThanSum, maxNum, getValue } from '../../shared/utils'
 import { MAX_SUM } from '../../shared/constants'
 
 export default class SmartRobot extends Robot {
@@ -12,7 +12,12 @@ export default class SmartRobot extends Robot {
       const functionals = R.filter(isFunctional, this.hands)
       if (hasValue(functionals)) card = this.pickFunctional(functionals)
     } else {
-      const options = R.reject(R.compose(isMoreThanSum(game.sum), getValue), this.hands)
+      const options = R.filter(
+        R.anyPass([
+          R.compose(isLessThanSum(game.sum), getValue),
+          isFunctional
+        ])
+      )(this.hands)
       if (hasValue(options)) {
         const functionless = R.reject(isFunctional, options)
         // Try to use a functionless card first unless having full functional cards
@@ -27,10 +32,11 @@ export default class SmartRobot extends Robot {
     if (card) {
       this.useCard(card, game)
       this.draw(game)
+      game.continue()
     } else {
+      console.log('\n~~~> This robot loses', 'id', this.id, 'hand', this.hands.map(getValue), '\n')
       game.lose(this.id, this.hands)
     }
-    return card
   }
 
   pickFunctional (options) {
