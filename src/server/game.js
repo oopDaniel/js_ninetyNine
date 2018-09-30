@@ -47,17 +47,19 @@ export default class Game {
 
   askForInstruction (id, card) {
     const player = this.getUserById(id)
-    const options = R.compose(
-      R.map(R.applySpec({
-        id: R.prop('id'),
-        name: R.ifElse(
-          R.has('socket'),
-          x => `User_${x.id}`,
-          x => `Robot_${x.id}`
-        )
-      })),
-      R.reject(R.propEq('id', id))
-    )(this.players)
+    const options = R.map(R.applySpec({
+      id: R.prop('id'),
+      name: R.ifElse(
+        R.has('socket'),
+        x => `User_${x.id}`,
+        x => `Robot_${x.id}`
+      )
+    }))(this.players.filter(
+      R.allPass([
+        p => p.id !== id,
+        (_, i) => !this.dead[i]
+      ])
+    ))
     player.socket.emit('askInstruction', { card, options })
   }
 
@@ -154,7 +156,7 @@ export default class Game {
 
   draw () {
     // console.warn(')))deck', this.deck)
-    return this.deck.unshift()
+    return this.deck.shift()
   }
 
   reverse () {
@@ -216,7 +218,7 @@ export default class Game {
   }
 
   announceWinner () {
-    const winner = this.players.filter((p, i) => !this.dead[i])
+    const winner = this.players.find((p, i) => !this.dead[i])
     this.broadcast.emit('win', {
       id: winner.id,
       isRobot: winner.robot

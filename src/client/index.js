@@ -1,7 +1,9 @@
 import io from 'socket.io-client'
+import chalk from 'chalk'
 import readline from 'readline'
 import { PORT } from '../shared/constants'
 import { getValue } from '../shared/utils'
+import { render } from './renderer'
 
 const socket = io(`http://127.0.0.1:${PORT}`)
 let id
@@ -14,7 +16,7 @@ socket.on('gameStarted', () => console.log('\n------------------------\n\tGAME S
 socket.on('deal', (newHands) => console.log('You got ', newHands))
 socket.on('userDisconnected', () => console.log('An user left the game :('))
 socket.on('played', handlePlayed)
-socket.on('sum', sum => console.log(`Sum: ${sum}\n`))
+socket.on('sum', sum => console.log(`Sum: ${chalk.blue(sum)}\n`))
 socket.on('invalid', handleInvalid)
 socket.on('askInstruction', handleInstruction)
 socket.on('lose', handleLose)
@@ -42,12 +44,12 @@ function handleShouldStart () {
 }
 
 function handlePlayed ({ card, user, isRobot, target }) {
-  console.log(`<${isRobot ? 'Robot' : 'User'}_${user}> played [${getValue(card)}].`)
+  console.log(chalk.magenta(`${isRobot ? 'Robot' : 'User'}_${user}`) + ` played ${render(card)}.`)
 }
 
 function handleTurn (hands) {
   rl.question(
-    'Enter the number of card: \n' + hands.map((v, i) => `(${i + 1})${getValue(v)}`).join(' ') + '\n',
+    'Enter the number of card: \n' + hands.map((v, i) => `(${i + 1})${render(v)}`).join(' ') + '\n',
     res => {
       if ([1, 2, 3, 4, 5].includes(+res)) {
         console.log('(raw)', hands)
@@ -58,7 +60,7 @@ function handleTurn (hands) {
 }
 
 function handleInvalid ({ card, hands }) {
-  console.warn(`${getValue(card)} isn't a valid one.`)
+  console.warn(`${render(card)} isn't a valid one.`)
   handleTurn(hands)
 }
 
@@ -108,20 +110,20 @@ function handleInstruction ({ card, options = [] }) {
 
 function handleLose ({ id: loseId, isRobot }) {
   if (loseId === id) {
-    console.warn('\n\n~~~~~~~~~~\nYou Lose!\n~~~~~~~~~~\n\n')
+    console.warn(chalk.yellow('\n\n~~~~~~~~~~\nYou Lose!\n~~~~~~~~~~\n\n'))
   } else {
     console.log('\n~~~~~~~~~~')
-    console.log(`${isRobot ? 'Robot' : 'User'}_${loseId} Loses!`)
+    console.log(chalk.yellow(`${isRobot ? 'Robot' : 'User'}_${loseId} Loses!`))
     console.log('~~~~~~~~~~\n')
   }
 }
 
 function handleWin ({ id: winId, isRobot }) {
   if (winId === id) {
-    console.warn('\n\n~~~~~~~~~~\nYou Win!\n~~~~~~~~~~\n\n')
+    console.warn(chalk.yellow('\n\n~~~~~~~~~~\nYou Win!\n~~~~~~~~~~\n\n'))
   } else {
     console.log('\n~~~~~~~~~~')
-    console.log(`${isRobot ? 'Robot' : 'User'}_${winId} Wins!`)
+    console.log(chalk.yellow(`${isRobot ? 'Robot' : 'User'}_${winId} Wins!`))
     console.log('~~~~~~~~~~\n')
   }
 }
