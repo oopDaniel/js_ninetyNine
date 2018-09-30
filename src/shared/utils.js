@@ -1,5 +1,5 @@
 import R from 'ramda'
-import { FUNCTIONAL_CARDS, SUITS } from './constants'
+import { FUNCTIONAL_CARDS, SUITS, MAX_SUM } from './constants'
 
 export const shuffle = cards => {
   const res = [...cards]
@@ -24,3 +24,5 @@ export const getCard = num => {
 
 export const hasValue = R.complement(R.isEmpty)
 export const sample = (options = []) => options[~~(Math.random() * options.length)]
+export const isMoreThanSum = sum => num => R.lte(sum + num, MAX_SUM)
+export const maxNum = R.reduce(R.max, 0)

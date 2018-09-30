@@ -1,48 +1,63 @@
+import R from 'ramda'
 import { shuffle } from '../shared/utils'
 
 const INITIAL_HANDS = 5
-const handsMap = {
-  a: 0,
-  b: 1,
-  c: 2,
-  d: 3,
-  e: 4,
-  f: 5,
-  0: 'a',
-  1: 'b',
-  2: 'c',
-  3: 'd',
-  4: 'e',
-  5: 'f'
-}
 
 export default class Game {
   constructor (playerCount = 4) {
-    this.deck = Array.from(new Array(64), (v, i) => i + 1)
+    this.sum = 0
+    this.deck = Array.from(new Array(53), (_, i) => i + 1)
     this.playerCount = playerCount
-    this.hands = {
-      a: [],
-      b: [],
-      c: [],
-      d: [],
-      e: [],
-      f: []
-    }
     this.isClockwise = true
     this.shuffle()
-    this.deal()
+    this._initHands(playerCount)
+    this._deal()
   }
 
   shuffle () {
     this.deck = shuffle(this.deck)
   }
 
-  deal () {
+  /**
+   * Get this [ [], [], [], [] ]
+   */
+  _initHands (playerCount) {
+    const possiblePlayers = [0, 1, 2, 3, 4, 5]
+    this.hands = R.compose(
+      R.map(() => []),
+      R.slice(0, playerCount)
+    )(possiblePlayers)
+  }
+
+  _deal () {
     for (let i = 0; i < INITIAL_HANDS; i++) {
       for (let j = 0; j < this.playerCount; j++) {
-        this.hands[handsMap[j]].push(this.deck[i * this.playerCount + j])
+        this.hands[j].push(this.deck[i * this.playerCount + j])
       }
     }
     this.deck = this.deck.slice(this.playerCount * INITIAL_HANDS)
+  }
+
+  put (cardOrCards) {
+    if (Array.isArray(cardOrCards)) this.deck.push(...cardOrCards)
+    else this.deck.push(cardOrCards)
+  }
+
+  draw () {
+    return this.deck.unshift()
+  }
+
+  reverse () {
+    this.isClockwise = !this.isClockwise
+  }
+
+  accumulate (num) {
+    this.sum += num
+    if (this.sum > 99) throw Error('Sum exceeds 99, which shouldn\'t happen')
+  }
+
+  reset () {
+    this.sum = 0
+    this.shuffle()
   }
 }
