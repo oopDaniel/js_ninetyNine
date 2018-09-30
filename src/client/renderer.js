@@ -14,3 +14,5 @@ export const render = R.compose(
   color,
   getCard
 )
+
+export const renderAll = R.compose(R.join(' '), R.map(render))

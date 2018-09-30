@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import readline from 'readline'
 import { PORT } from '../shared/constants'
 import { getValue } from '../shared/utils'
-import { render } from './renderer'
+import { render, renderAll } from './renderer'
 
 const socket = io(`http://127.0.0.1:${PORT}`)
 let id
@@ -13,7 +13,7 @@ socket.on('userConnected', (user) => console.log(`User ${user} joined the game.`
 socket.on('shouldStart', handleShouldStart)
 socket.on('id', (newId) => (id = newId))
 socket.on('gameStarted', () => console.log('\n------------------------\n\tGAME START!!\n------------------------\n'))
-socket.on('deal', (newHands) => console.log('You got ', newHands))
+socket.on('deal', (newHands) => console.log('You got ', renderAll(newHands)))
 socket.on('userDisconnected', () => console.log('An user left the game :('))
 socket.on('played', handlePlayed)
 socket.on('sum', sum => console.log(`Sum: ${chalk.blue(sum)}\n`))
