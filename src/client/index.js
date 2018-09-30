@@ -2,7 +2,7 @@ import io from 'socket.io-client'
 import chalk from 'chalk'
 import readline from 'readline'
 import { PORT } from '../shared/constants'
-import { getValue } from '../shared/utils'
+import { getValue, isFunctional } from '../shared/utils'
 import { render, renderAll } from './renderer'
 
 const socket = io(`http://127.0.0.1:${PORT}`)
@@ -32,14 +32,14 @@ const rl = readline.createInterface({
 function handleCanStart () {
   rl.question(
     'We\'re connected. Wait for other players to join...\n(or you enter any word to start)\n',
-    res => {
-      if (res && !hasStarted) socket.emit('startGame')
+    () => {
+      if (!hasStarted) socket.emit('startGame')
     }
   )
 }
 
 function handleStarted () {
-  console.log('\x1Bc')
+  cleanScreen()
   hasStarted = true
   console.log('\n------------------------\n\tGAME START!!\n------------------------\n')
 }
@@ -52,6 +52,9 @@ function handleShouldStart () {
 
 function handlePlayed ({ card, user, isRobot, target }) {
   console.log(chalk.magenta(`${isRobot ? 'Robot' : 'User'}_${user}`) + ` played ${render(card)}.`)
+  if (isFunctional(card)) {
+    showFunctionalHint(card)
+  }
 }
 
 function handleTurn (hands) {
@@ -122,7 +125,7 @@ function handleLose ({ id: loseId, isRobot }) {
 }
 
 function handleWin ({ id: winId, isRobot }) {
-  console.log('\x1Bc')
+  cleanScreen()
   rl.close()
   if (winId === id) {
     console.warn(chalk.yellow('\n\n~~~~~~~~~~\nYou Win!\n~~~~~~~~~~\n\n'))
@@ -134,4 +137,21 @@ function handleWin ({ id: winId, isRobot }) {
     console.warn(chalk.yellow('\n\n~~~~~~~~~~\nYou Lose :(\n~~~~~~~~~~\n\n'))
   }
   console.log(chalk.gray('Hit `Ctrl+c` to exit'))
+}
+
+function showFunctionalHint (card) {
+  const num = getValue(card)
+  if (num === 4) {
+    console.log(chalk.gray('\n(Rotation changed...)\n'))
+  }
+  if (num === 5) {
+    console.log(chalk.gray('\n(Someone was assigned...)\n'))
+  }
+  if (num === 13) {
+    console.log(chalk.cyan.bold('\n(NINETY NINE!)\n'))
+  }
+}
+
+function cleanScreen () {
+  console.log('\x1Bc')
 }
