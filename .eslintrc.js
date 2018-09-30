@@ -6,9 +6,6 @@ module.exports = {
     parser: 'babel-eslint',
     sourceType: 'module'
   },
-  env: {
-    node: true,
-  },
   // https://github.com/feross/standard/blob/master/RULES.md#javascript-standard-style
   extends: ['standard']
 }
