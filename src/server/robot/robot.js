@@ -13,7 +13,7 @@ export default class Robot {
   }
 
   play (game) {
-    console.log('playing..', this.id)
+    console.log('playing robot id:', this.id)
     let card = null
     // Functional card only
     if (game.sum === MAX_SUM) {
@@ -21,6 +21,7 @@ export default class Robot {
       // Randomly pick a functional card
       if (hasValue(functionals)) card = sample(functionals)
     } else {
+      // TODO: use functional
       const options = R.reject(R.compose(isMoreThanSum(game.sum), getValue), this.hands)
       if (hasValue(options)) {
         const functionless = R.reject(isFunctional, options)
@@ -38,9 +39,9 @@ export default class Robot {
       this.draw(game)
       game.continue()
     } else {
+      console.log('\n~~~> This robot loses', 'id', this.id, 'hand', this.hands.map(getValue), '\n')
       game.lose(this.id, this.hands)
     }
-    return game
   }
 
   useCard (card, game) {

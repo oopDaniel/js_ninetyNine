@@ -26,9 +26,11 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('userConnected', realUserCount)
     if (realUserCount === MAX_USERS) io.sockets.emit('shouldStart')
   }
+  socket.emit('id', socket.id)
   socket.emit('canStart')
   socket.on('startGame', handleStartGame)
-  socket.on('play', handlePlay)
+  socket.on('play', card => handlePlay(socket.id, card))
+  socket.on('instruct', inst => handleInstruction(socket.id, inst))
   socket.on('disconnect', handleDisconnect(socket))
 })
 
@@ -60,8 +62,15 @@ function handleStartGame () {
   game.start()
 }
 
-function handlePlay (card) {
+function handlePlay (id, card) {
+  game.userMove(id, card)
   console.log('user played card', card)
+}
+
+function handleInstruction (id, inst) {
+  console.log('hand inst')
+  game.userMove(id, inst, true)
+  console.log('user inst', inst)
 }
 
 function handleDisconnect (socket) {

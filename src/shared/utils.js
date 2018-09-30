@@ -16,6 +16,7 @@ export const shuffle = cards => {
 export const mod = (n, m) => ((n % m) + m) % m
 
 export const isFunctional = card => FUNCTIONAL_CARDS.includes(card)
+export const isFunctionalWithInstruction = card => [5, 10, 12].includes(getValue(card))
 export const getValue = num => num % 13 === 0 ? 13 : num % 13
 export const getCard = num => {
   const suit = ~~((num - 1) / 13)

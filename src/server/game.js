@@ -1,5 +1,5 @@
 import R from 'ramda'
-import { shuffle, mod, isMoreThanSum } from '../shared/utils'
+import { shuffle, mod, isMoreThanSum, getValue } from '../shared/utils'
 import { MAX_SUM, MAX_PLAYERS } from '../shared/constants'
 
 const INITIAL_HANDS = 5
@@ -9,12 +9,13 @@ export default class Game {
     if (players.length < 2) throw new Error('Need more players')
     this.broadcast = broadcast
     this.sum = 0
-    this.deck = Array.from(new Array(53), (_, i) => i + 1)
+    this.deck = Array.from(new Array(52), (_, i) => i + 1)
     this.players = players
     this.playerCount = players.length
     this.isClockwise = true
     this.hands = null
     this.turn = null
+    this.dead = {}
     this.shuffle()
     this._initHands()
     this._deal()
@@ -23,6 +24,41 @@ export default class Game {
 
   shuffle () {
     this.deck = shuffle(this.deck)
+  }
+
+  getUserById (id) {
+    return this.players.find(p => p.id === id)
+  }
+
+  userMove (id, payload, isInstruction = false) {
+    const player = this.getUserById(id)
+    if (isInstruction) {
+      console.log('user moved', payload)
+      player.proxy.setInstruction(this, payload)
+    } else {
+      player.proxy.useCard(this, payload)
+    }
+  }
+
+  warnUser (id, card, hands) {
+    const player = this.getUserById(id)
+    player.socket.emit('invalid', { card, hands })
+  }
+
+  askForInstruction (id, card) {
+    const player = this.getUserById(id)
+    const options = R.compose(
+      R.map(R.applySpec({
+        id: R.prop('id'),
+        name: R.ifElse(
+          R.has('socket'),
+          x => `User_${x.id}`,
+          x => `Robot_${x.id}`
+        )
+      })),
+      R.reject(R.propEq('id', id))
+    )(this.players)
+    player.socket.emit('askInstruction', { card, options })
   }
 
   /**
@@ -51,6 +87,7 @@ export default class Game {
       current,
       next: (current + 1) % this.playerCount
     }
+    console.log('after init turn:', this.turn)
   }
 
   start () {
@@ -68,36 +105,48 @@ export default class Game {
     }
   }
 
-  getNext () {
-    const { next: current } = this.turn
+  getNext (current = this.turn.next) {
     const index = this.isClockwise ? 1 : -1
     return mod(current + index, this.playerCount)
   }
 
-  setNext (customNext) {
-    const { next: current } = this.turn
-    this.turn = {
-      current,
-      next: customNext || this.getNext()
-    }
+  setNext (custom) {
+    console.log('original: this.turn', this.turn.next, this.turn.current)
+    do {
+      const { next: current } = this.turn
+      this.turn = {
+        current: custom || current,
+        next: this.getNext(custom)
+      }
+    } while (this.dead[this.turn.current])
+    console.log('after changed: this.turn', this.turn)
   }
 
   announce (card) {
     const curr = this.players[this.turn.current]
+    // const socket = this.players.filter(p => p.socket && p.id === curr.id)
     this.broadcast.emit('played', {
       card,
       user: curr.id,
       isRobot: curr.robot,
-      target: this.turn.next,
-      newSum: this.sum
+      target: this.turn.next
     })
+    // socket.broadcast.emit()
+    // socket.emit('played', {
+    //   card,
+    //   user: 'You',
+    //   isRobot: false
+    // })
   }
 
   put (cardOrCards) {
-    console.log('put:', cardOrCards, 'by', this.players[this.turn.current].id)
     if (Array.isArray(cardOrCards)) {
       this.deck.push(...cardOrCards) // happens when someone loses
     } else {
+      console.log('this.turn.current', this.turn.current)
+      console.log('===============================')
+      console.log('put:', `[${getValue(cardOrCards)}]`, 'by', this.players[this.turn.current] && this.players[this.turn.current].id)
+      console.log('===============================')
       this.announce(cardOrCards)
       this.deck.push(cardOrCards)
     }
@@ -109,11 +158,22 @@ export default class Game {
 
   reverse () {
     this.isClockwise = !this.isClockwise
+    this.turn.next = this.getNext(this.turn.current)
+    console.log('reverse new turn', this.turn)
   }
 
   accumulate (num) {
     this.sum += num
     if (this.sum > MAX_SUM) throw Error('Sum exceeds 99, which shouldn\'t happen')
+  }
+
+  addSum (num) {
+    this.sum += num
+  }
+
+  reduceSum (num) {
+    console.warn(this)
+    this.sum -= num
   }
 
   addOrReduce (num) {
@@ -134,13 +194,28 @@ export default class Game {
   }
 
   lose (id, hands) {
+    const player = this.getUserById(id)
+    this.broadcast.emit('lose', {
+      id: player.id,
+      isRobot: player.robot
+    })
     const index = this.players.findIndex(R.propEq('id', id))
-    if (index > -1 && this.players[index].socket) {
-      this.players[index].socket.emit('lose', this.players[index].proxy.hands)
+    if (index > -1) {
+      this.dead[index] = true
+      console.log('putting hands back', hands)
+      this.put(hands)
+      this.shuffle()
+      if (this.players.length - Object.keys(this.dead).length > 1) {
+        this.setNext()
+        this.continue()
+      } else {
+        this.announceWinner()
+      }
     }
-    this.players = R.remove(index, 1, this.players)
-    this.playerCount--
-    this.put(hands)
-    this.shuffle()
+  }
+
+  announceWinner () {
+    const winner = this.players.find(p => !this.dead[p.id])
+    winner.socket.emit('win')
   }
 }
