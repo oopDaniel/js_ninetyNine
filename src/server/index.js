@@ -26,6 +26,7 @@ io.on('connection', (socket) => {
   }
   socket.emit('canStart')
   socket.on('startGame', handleStartGame)
+  socket.on('play', handlePlay)
   socket.on('disconnect', handleDisconnect(socket))
 })
 
@@ -39,7 +40,7 @@ function handleStartGame () {
   ]
 
   io.sockets.emit('gameStarted', realUserCount)
-  game = new Game(players)
+  game = new Game(players, io.sockets)
 
   const userHands = game.hands.slice(0, realUserCount)
   userHands.forEach((h, i) => players[i].socket.emit('deal', h))
@@ -49,20 +50,26 @@ function handleStartGame () {
     robots.forEach((r, i) => r.setHands(robotHands[i]))
   }
 
-  robots.forEach(r => console.info(r.hands))
+  // robots.forEach(r => console.info(r.hands))
 
-  // while (players[game.turn.current].robot) {
-  //   players[game.turn.current].robot.play(game)
-  // }
+  game.start()
+}
+
+function handlePlay (card) {
+  console.log('user played card', card)
 }
 
 function handleDisconnect (socket) {
   return () => {
     realUserCount--
     const i = players.findIndex(s => s.id === socket.id)
-    if (i > -1) this.players.splice(i, 1)
-    if (hasGameStarted) {
+    if (i > -1) players.splice(i, 1)
+    if (players.every(p => p.robot)) {
+      hasGameStarted = false
+      players = []
+    } else if (hasGameStarted) {
       socket.broadcast.emit('userDisconnected')
+      game.lose(socket.id)
       // TODO: shuffle
     }
   }

@@ -28,7 +28,7 @@ export default class SmartRobot extends Robot {
       this.useCard(card, game)
       this.draw(game)
     } else {
-      console.log('lose')
+      game.lose(this.id, this.hands)
     }
     return card
   }
@@ -45,7 +45,7 @@ export default class SmartRobot extends Robot {
 
   executeFunction (num, game) {
     if (num === 5) {
-      game.next()
+      game.setNext()
     } else {
       super.executeFunction(num, game)
     }

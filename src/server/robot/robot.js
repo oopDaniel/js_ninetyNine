@@ -12,6 +12,7 @@ export default class Robot {
   }
 
   play (game) {
+    console.log('playing..', this.id)
     let card = null
     // Functional card only
     if (game.sum === MAX_SUM) {
@@ -34,20 +35,24 @@ export default class Robot {
     if (card) {
       this.useCard(card, game)
       this.draw(game)
+      game.continue(this.id)
     } else {
-      game.lose(this.hands)
+      game.lose(this.id, this.hands)
     }
     return game
   }
 
   useCard (card, game) {
+    let next
     game.put(card)
     if (isFunctional(card)) {
-      this.executeFunction(getValue(card), game)
+      next = this.executeFunction(getValue(card), game)
     } else {
       this.accumulateSum(getValue(card), game)
     }
     this.hands = R.reject(v => v === card, this.hands)
+    game.setNext(next) // Will calculate default next if passing undefined
+    console.log('game next', game.turn.current, game.turn.next)
   }
 
   draw (game) {
@@ -55,6 +60,7 @@ export default class Robot {
   }
 
   executeFunction (num, game) {
+    let customNext
     switch (num) {
       case 1: {
         game.reset()
@@ -67,7 +73,7 @@ export default class Robot {
       case 5: {
         const options = R.reject(R.propEq('id', this.id), game.players)
         const next = sample(options)
-        game.next(R.findIndex(R.propEq('id', next.id), game.players))
+        customNext = R.findIndex(R.propEq('id', next.id), game.players)
         break
       }
       case 10: {
@@ -75,7 +81,6 @@ export default class Robot {
         break
       }
       case 11: {
-        game.next()
         break
       }
       case 12: {
@@ -87,6 +92,7 @@ export default class Robot {
         break
       }
     }
+    return customNext
   }
 
   accumulateSum (num, game) {

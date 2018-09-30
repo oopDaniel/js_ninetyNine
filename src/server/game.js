@@ -5,8 +5,9 @@ import { MAX_SUM, MAX_PLAYERS } from '../shared/constants'
 const INITIAL_HANDS = 5
 
 export default class Game {
-  constructor (players = []) {
+  constructor (players = [], broadcast) {
     if (players.length < 2) throw new Error('Need more players')
+    this.broadcast = broadcast
     this.sum = 0
     this.deck = Array.from(new Array(53), (_, i) => i + 1)
     this.players = players
@@ -50,25 +51,57 @@ export default class Game {
       current,
       next: (current + 1) % this.playerCount
     }
+    console.log('* current', this.turn.current, this.turn.next)
+  }
+
+  start () {
+    this.continue(null)
+  }
+
+  continue (caller) {
+    this.broadcast.emit('sum', this.sum)
+    console.warn({ caller })
+    if (this.players[this.turn.current].robot) {
+      this.players[this.turn.current].robot.play(this)
+    } else {
+      this.players[this.turn.current].socket.emit('yourTurn')
+    }
   }
 
   getNext () {
-    const { current } = this.turn
+    const { next: current } = this.turn
     const index = this.isClockwise ? 1 : -1
     return mod(current + index, this.playerCount)
   }
 
-  next (customNext) {
+  setNext (customNext) {
     const { next: current } = this.turn
+    console.log('---cal current', current)
     this.turn = {
       current,
       next: customNext || this.getNext()
     }
   }
 
+  announce (card) {
+    const curr = this.players[this.turn.current]
+    this.broadcast.emit('played', {
+      card,
+      user: curr.id,
+      isRobot: curr.robot,
+      target: this.turn.next,
+      newSum: this.sum
+    })
+  }
+
   put (cardOrCards) {
-    if (Array.isArray(cardOrCards)) this.deck.push(...cardOrCards)
-    else this.deck.push(cardOrCards)
+    console.log('putt:', cardOrCards, 'by', this.players[this.turn.current].id, 'old sum', this.sum)
+    if (Array.isArray(cardOrCards)) {
+      this.deck.push(...cardOrCards) // happens when someone loses
+    } else {
+      this.announce(cardOrCards)
+      this.deck.push(cardOrCards)
+    }
   }
 
   draw () {
@@ -101,7 +134,9 @@ export default class Game {
     this.sum = 99
   }
 
-  lose (hands) {
+  lose (id, hands) {
+    this.players = R.reject(R.propEq('id', id), this.players)
+    this.playerCount--
     this.put(hands)
     this.shuffle()
   }
