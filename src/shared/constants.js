@@ -2,6 +2,7 @@ export const PORT = 8080
 
 const INDISTINCT_FUNCTION_CARD_VALUES = [4, 5, 10, 11, 12, 13]
 const SUIT_SIZE = 13
+export const MAX_SUM = 99
 
 export const FUNCTIONAL_CARDS = [
   1, // Spade

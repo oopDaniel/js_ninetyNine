@@ -1,3 +1,4 @@
+import R from 'ramda'
 import { FUNCTIONAL_CARDS, SUITS } from './constants'
 
 export const shuffle = cards => {
@@ -20,3 +21,6 @@ export const getCard = num => {
     suit: SUITS[suit]
   }
 }
+
+export const hasValue = R.complement(R.isEmpty)
+export const sample = (options = []) => options[~~(Math.random() * options.length)]
