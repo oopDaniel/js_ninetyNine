@@ -4,8 +4,8 @@
   "description": "An interesting card game 😆",
   "scripts": {
     "start": "concurrently -k \"npm run start:server\" \"npm run start:client\"",
-    "start:server": "nodemon --exec babel-node src/server",
-    "start:client": "nodemon --exec babel-node src/client",
+    "start:server": "nodemon --exec babel-node --plugins ramda src/server",
+    "start:client": "nodemon --exec babel-node --plugins ramda src/client",
     "lint": "eslint --fix src",
     "test": "cross-env BABEL_ENV=test karma start test/karma.conf.js --single-run",
     "tdd": "cross-env BABEL_ENV=test karma start test/karma.conf.js"
