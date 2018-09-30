@@ -10,6 +10,7 @@ export default class SmartRobot extends Robot {
     // Functional card only
     if (game.sum === MAX_SUM) {
       const functionals = R.filter(isFunctional, this.hands)
+      // Randomly pick a functional card
       if (hasValue(functionals)) card = this.pickFunctional(functionals)
     } else {
       const options = R.filter(
@@ -44,7 +45,7 @@ export default class SmartRobot extends Robot {
     const priority = [10, 12, 13, 11, 5, 4, 1]
     for (let i = 0; i < priority.length; i++) {
       if (R.contains(priority[i], values)) {
-        return options[R.findIndex(R.equals(priority[i]))]
+        return options[R.findIndex(R.compose(R.equals(priority[i]), getValue), options)]
       }
     }
   }

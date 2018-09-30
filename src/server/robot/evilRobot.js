@@ -27,7 +27,7 @@ export default class EvilRobot extends SmartRobot {
     const priority = [13, 10, 12, 11, 5, 4, 1]
     for (let i = 0; i < priority.length; i++) {
       if (R.contains(priority[i], values)) {
-        return options[R.findIndex(R.equals(priority[i]))]
+        return options[R.findIndex(R.compose(R.equals(priority[i]), getValue), options)]
       }
     }
   }

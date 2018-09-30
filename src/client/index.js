@@ -101,13 +101,10 @@ function handleInstruction ({ card, options = [] }) {
       'Designate ' + options.map((o, i) => `(${i + 1}) ${o.name}`).join(' ') + '\n',
       res => {
         if (+res <= options.length && +res > 0) {
-          console.log('emited inst')
           socket.emit('instruct', {
             card,
             inst: options[+res - 1].id
           })
-        } else {
-          console.log('why')
         }
       }
     )
@@ -132,6 +129,9 @@ function handleWin ({ id: winId, isRobot }) {
   } else {
     console.log('\n~~~~~~~~~~')
     console.log(chalk.yellow(`${isRobot ? 'Robot' : 'User'}_${winId} Wins!`))
-    console.log('~~~~~~~~~~\n')
+    console.log('~~~~~~~~~~\n\n')
+
+    console.warn(chalk.yellow('\n\n~~~~~~~~~~\nYou Lose :(\n~~~~~~~~~~\n\n'))
   }
+  console.log(chalk.gray('Hit `Ctrl+c` to exit'))
 }
